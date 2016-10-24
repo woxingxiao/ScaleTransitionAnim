@@ -1,3 +1,9 @@
+本项目受Google官方demo [Zooming a View](https://developer.android.com/training/animation/zoom.html?hl=zh-cn) 启发，实现了点击小图放大至全屏预览，退出全屏恢复至原来位置这两个过程的动画过渡。
+常见应用场景如微信朋友圈照片九宫格，某些手机系统相册等。
+
+##Screenshot
+![demo](https://github.com/woxingxiao/ScaleTransitionAnim/blob/master/demo.gif)
+
 ##License
 ```
 The MIT License (MIT)
