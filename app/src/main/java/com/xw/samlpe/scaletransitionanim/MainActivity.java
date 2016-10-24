@@ -20,14 +20,14 @@ import com.chad.library.adapter.base.BaseViewHolder;
 import com.chad.library.adapter.base.listener.OnItemClickListener;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private FrameLayout mContentContainer;
     private PreviewLayout mPreviewLayout;
 
-    private ArrayList<String> urls = new ArrayList<>();
-    private ArrayList<ThumbViewInfo> mThumbViewInfoList = new ArrayList<>();
+    private List<ThumbViewInfo> mThumbViewInfoList = new ArrayList<>();
     private LinearLayout.LayoutParams mLayoutParams;
     private int mStatusBarHeight;
     private int mSolidWidth = 0;
@@ -59,43 +59,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        urls.add("http://photocdn.sohu.com/20160307/mp62252655_1457334772519_2.png");
-        urls.add("http://img0.imgtn.bdimg.com/it/u=556618733,1205300389&fm=21&gp=0.jpg");
-        urls.add("http://photocdn.sohu.com/20160307/mp62252655_1457334772519_2.png");
-        urls.add("http://img1.imgtn.bdimg.com/it/u=3272030875,860665188&fm=21&gp=0.jpg");
-        urls.add("http://img1.imgtn.bdimg.com/it/u=2237658959,3726297486&fm=21&gp=0.jpg");
-        urls.add("http://img1.imgtn.bdimg.com/it/u=3016675040,1510439865&fm=21&gp=0.jpg");
-
-        urls.add("http://imgcdn.thecover.cn/FlwmxD5lj9aZuAwIfNlTGeg4fbA6?imageMogr2/quality/80/ignore-error/1");
-        urls.add("http://i0.itc.cn/20110124/8f7_98cce95e_ae0a_4712_8e65_1789fba80843_0.jpg");
-        urls.add("http://simg314.magcasa.com/content_images/2015/10/22/162537/1445450806_8832.jpg");
-
-        urls.add("http://img4.duitang.com/uploads/item/201307/02/20130702113059_UEGL2.jpeg");
-        urls.add("http://img0.imgtn.bdimg.com/it/u=985035006,79865976&fm=21&gp=0.jpg");
-        urls.add("http://img5.imgtn.bdimg.com/it/u=1774291582,2563335167&fm=21&gp=0.jpg");
-        urls.add("http://photocdn.sohu.com/20160307/mp62252655_1457334772519_2.png");
-        urls.add("http://img5.imgtn.bdimg.com/it/u=1511364704,3337189105&fm=21&gp=0.jpg");
-        urls.add("http://img3.imgtn.bdimg.com/it/u=2144096677,2391514122&fm=21&gp=0.jpg");
-        urls.add("http://img0.imgtn.bdimg.com/it/u=556618733,1205300389&fm=21&gp=0.jpg");
-        urls.add("http://img1.imgtn.bdimg.com/it/u=3272030875,860665188&fm=21&gp=0.jpg");
-        urls.add("http://img1.imgtn.bdimg.com/it/u=2237658959,3726297486&fm=21&gp=0.jpg");
-
-        urls.add("http://img4.duitang.com/uploads/item/201307/02/20130702113059_UEGL2.jpeg");
-        urls.add("http://img0.imgtn.bdimg.com/it/u=985035006,79865976&fm=21&gp=0.jpg");
-        urls.add("http://img5.imgtn.bdimg.com/it/u=1774291582,2563335167&fm=21&gp=0.jpg");
-        urls.add("http://img5.imgtn.bdimg.com/it/u=1511364704,3337189105&fm=21&gp=0.jpg");
-        urls.add("http://img3.imgtn.bdimg.com/it/u=2144096677,2391514122&fm=21&gp=0.jpg");
-        urls.add("http://img0.imgtn.bdimg.com/it/u=556618733,1205300389&fm=21&gp=0.jpg");
-        urls.add("http://img1.imgtn.bdimg.com/it/u=3272030875,860665188&fm=21&gp=0.jpg");
-        urls.add("http://img1.imgtn.bdimg.com/it/u=2237658959,3726297486&fm=21&gp=0.jpg");
-        urls.add("http://img1.imgtn.bdimg.com/it/u=3016675040,1510439865&fm=21&gp=0.jpg");
-        urls.add("http://photocdn.sohu.com/20160307/mp62252655_1457334772519_2.png");
-
-        urls.add("http://img0.imgtn.bdimg.com/it/u=556618733,1205300389&fm=21&gp=0.jpg");
-        urls.add("http://img1.imgtn.bdimg.com/it/u=3272030875,860665188&fm=21&gp=0.jpg");
-        urls.add("http://img1.imgtn.bdimg.com/it/u=2237658959,3726297486&fm=21&gp=0.jpg");
-        urls.add("http://img1.imgtn.bdimg.com/it/u=3016675040,1510439865&fm=21&gp=0.jpg");
-        urls.add("http://photocdn.sohu.com/20160307/mp62252655_1457334772519_2.png");
+        List<String> urls = ImageUrlConfig.getUrls();
 
         for (int i = 0; i < urls.size(); i++) {
             mThumbViewInfoList.add(new ThumbViewInfo(urls.get(i), i));
