@@ -25,14 +25,16 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private FrameLayout mContentContainer;
+    private RecyclerView mRecyclerView;
     private PreviewLayout mPreviewLayout;
 
     private List<ThumbViewInfo> mThumbViewInfoList = new ArrayList<>();
     private LinearLayout.LayoutParams mLayoutParams;
     private int mStatusBarHeight;
+    private int[] mPadding = new int[4];
     private int mSolidWidth = 0;
     private int mSolidHeight = 0;
-    private int mSpanCnt = 3;
+    private Rect mRVBounds = new Rect();
     private GridLayoutManager mGridLayoutManager;
 
     @Override
@@ -44,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         mStatusBarHeight = getResources().getDimensionPixelSize(resId);
 
         mContentContainer = (FrameLayout) findViewById(android.R.id.content);
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
         mLayoutParams = new LinearLayout.LayoutParams(metrics.widthPixels / 3, metrics.widthPixels / 3);
 
@@ -65,11 +67,10 @@ public class MainActivity extends AppCompatActivity {
             mThumbViewInfoList.add(new ThumbViewInfo(urls.get(i), i));
         }
 
-        mGridLayoutManager = new GridLayoutManager(this, mSpanCnt);
-        assert recyclerView != null;
-        recyclerView.setLayoutManager(mGridLayoutManager);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(new BaseQuickAdapter<String>(R.layout.item_pic_thumb, urls) {
+        mGridLayoutManager = new GridLayoutManager(this, 3);
+        mRecyclerView.setLayoutManager(mGridLayoutManager);
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setAdapter(new BaseQuickAdapter<String>(R.layout.item_pic_thumb, urls) {
             @Override
             protected void convert(final BaseViewHolder holder, final String url) {
                 holder.itemView.setLayoutParams(mLayoutParams);
@@ -81,23 +82,25 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        recyclerView.addOnItemTouchListener(new OnItemClickListener() {
+        mRecyclerView.addOnItemTouchListener(new OnItemClickListener() {
             @Override
             public void SimpleOnItemClick(BaseQuickAdapter baseQuickAdapter, View view, int position) {
                 mPreviewLayout = new PreviewLayout(MainActivity.this);
                 mPreviewLayout.setData(mThumbViewInfoList, position);
-                mPreviewLayout.triggerScaleUpAnimation();
+                mPreviewLayout.startScaleUpAnimation();
                 mContentContainer.addView(mPreviewLayout);
             }
         });
 
-        recyclerView.addOnScrollListener(new MyRecyclerOnScrollListener());
+        mRecyclerView.addOnScrollListener(new MyRecyclerOnScrollListener());
     }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) {
+            mRecyclerView.getGlobalVisibleRect(mRVBounds);
+
             assembleDataList();
         }
     }
@@ -123,8 +126,6 @@ public class MainActivity extends AppCompatActivity {
      * 从第一个完整可见item顺序遍历
      */
     private void computeBoundsForward(int firstCompletelyVisiblePos) {
-        int topOffset = 0;
-
         for (int i = firstCompletelyVisiblePos; i < mThumbViewInfoList.size(); i++) {
             View itemView = mGridLayoutManager.findViewByPosition(i);
             Rect bounds = new Rect();
@@ -135,22 +136,23 @@ public class MainActivity extends AppCompatActivity {
                 thumbView.getGlobalVisibleRect(bounds);
 
                 if (mSolidWidth * mSolidHeight == 0) {
+                    mPadding[0] = thumbView.getPaddingLeft();
+                    mPadding[1] = thumbView.getPaddingTop();
+                    mPadding[2] = thumbView.getPaddingRight();
+                    mPadding[3] = thumbView.getPaddingBottom();
                     mSolidWidth = bounds.width();
                     mSolidHeight = bounds.height();
                 }
-                topOffset = mSolidHeight - bounds.height();
 
-                bounds.set(
-                        bounds.left + thumbView.getPaddingLeft(),
-                        bounds.top + thumbView.getPaddingTop(),
-                        bounds.left + mSolidWidth - thumbView.getPaddingLeft(),
-                        bounds.top + mSolidHeight - thumbView.getPaddingBottom()
-                );
+                bounds.left = bounds.left + mPadding[0];
+                bounds.top = bounds.top + mPadding[1];
+                bounds.right = bounds.left + mSolidWidth - mPadding[2];
+                bounds.bottom = bounds.top + mSolidHeight - mPadding[3];
             } else {
-                bounds.left = i % 3 * mSolidWidth;
-                bounds.top = i / mSpanCnt * mSolidHeight + topOffset;
-                bounds.right = bounds.left + mSolidWidth;
-                bounds.bottom = bounds.top + mSolidHeight;
+                bounds.left = i % 3 * mSolidWidth + mPadding[0];
+                bounds.top = mRVBounds.bottom + mPadding[1];
+                bounds.right = bounds.left + mSolidWidth - mPadding[2];
+                bounds.bottom = bounds.top + mSolidHeight - mPadding[3];
             }
             bounds.offset(0, -mStatusBarHeight);
 
@@ -162,8 +164,6 @@ public class MainActivity extends AppCompatActivity {
      * 从第一个完整可见item逆序遍历，如果初始位置为0，则不执行方法内循环
      */
     private void computeBoundsBackward(int firstCompletelyVisiblePos) {
-        int bottomOffset = 0;
-
         for (int i = firstCompletelyVisiblePos - 1; i >= 0; i--) {
             View itemView = mGridLayoutManager.findViewByPosition(i);
             Rect bounds = new Rect();
@@ -173,22 +173,15 @@ public class MainActivity extends AppCompatActivity {
 
                 thumbView.getGlobalVisibleRect(bounds);
 
-                if (bottomOffset == 0) {
-                    bottomOffset = bounds.bottom;
-                }
-
-                bounds.set(
-                        bounds.left + thumbView.getPaddingLeft(),
-                        bounds.bottom - mSolidHeight + thumbView.getPaddingTop(),
-                        bounds.right - thumbView.getPaddingLeft(),
-                        bounds.bottom - thumbView.getPaddingBottom()
-                );
+                bounds.left = bounds.left + mPadding[0];
+                bounds.bottom = bounds.bottom - mPadding[3];
+                bounds.right = bounds.left + mSolidWidth - mPadding[2];
+                bounds.top = bounds.bottom - mSolidHeight + mPadding[1];
             } else {
-                bounds.left = i % 3 * mSolidWidth;
-                bounds.top = -((firstCompletelyVisiblePos - i) / mSpanCnt * mSolidHeight) -
-                        (mSolidHeight - bottomOffset);
-                bounds.right = bounds.left + mSolidWidth;
-                bounds.bottom = bounds.top + mSolidHeight;
+                bounds.left = i % 3 * mSolidWidth + mPadding[0];
+                bounds.bottom = mRVBounds.top - mPadding[3];
+                bounds.right = bounds.left + mSolidWidth - mPadding[2];
+                bounds.top = bounds.bottom - mSolidHeight + mPadding[1];
             }
             bounds.offset(0, -mStatusBarHeight);
 
@@ -199,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         if (mContentContainer.getChildAt(mContentContainer.getChildCount() - 1) instanceof PreviewLayout) {
-            mPreviewLayout.triggerScaleDownAnimation();
+            mPreviewLayout.startScaleDownAnimation();
             return;
         }
 

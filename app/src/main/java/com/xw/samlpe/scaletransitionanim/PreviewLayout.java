@@ -44,6 +44,7 @@ public class PreviewLayout extends FrameLayout implements ViewPager.OnPageChange
     private int mIndex;
     private Rect mStartBounds = new Rect();
     private Rect mFinalBounds = new Rect();
+    private boolean isAnimFinished = true;
 
     public PreviewLayout(Context context) {
         this(context, null);
@@ -89,7 +90,7 @@ public class PreviewLayout extends FrameLayout implements ViewPager.OnPageChange
         });
     }
 
-    public void triggerScaleUpAnimation() {
+    public void startScaleUpAnimation() {
         getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
@@ -135,6 +136,8 @@ public class PreviewLayout extends FrameLayout implements ViewPager.OnPageChange
     }
 
     private void startAnim() {
+        if (!isAnimFinished) return;
+
         float startScale = computeStartScale();
 
         AnimatorSet animatorSet = new AnimatorSet();
@@ -149,6 +152,7 @@ public class PreviewLayout extends FrameLayout implements ViewPager.OnPageChange
             @Override
             public void onAnimationStart(Animator animation) {
                 super.onAnimationStart(animation);
+                isAnimFinished = false;
                 mViewPager.setAlpha(0f);
                 mScalableImageView.setVisibility(VISIBLE);
             }
@@ -156,6 +160,7 @@ public class PreviewLayout extends FrameLayout implements ViewPager.OnPageChange
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
+                isAnimFinished = true;
                 mViewPager.setAlpha(1f);
                 mScalableImageView.setVisibility(View.INVISIBLE);
             }
@@ -185,7 +190,9 @@ public class PreviewLayout extends FrameLayout implements ViewPager.OnPageChange
         return startScale;
     }
 
-    public void triggerScaleDownAnimation() {
+    public void startScaleDownAnimation() {
+        if (!isAnimFinished) return;
+
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playTogether(
                 ObjectAnimator.ofFloat(mScalableImageView, View.X, mStartBounds.left),
@@ -197,6 +204,7 @@ public class PreviewLayout extends FrameLayout implements ViewPager.OnPageChange
             @Override
             public void onAnimationStart(Animator animation) {
                 super.onAnimationStart(animation);
+                isAnimFinished = false;
                 Glide.with(getContext()).load(mThumbViewInfoList.get(mIndex).getUrl()).into(mScalableImageView);
                 mScalableImageView.setVisibility(View.VISIBLE);
                 mViewPager.setAlpha(0f);
@@ -205,6 +213,7 @@ public class PreviewLayout extends FrameLayout implements ViewPager.OnPageChange
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
+                isAnimFinished = true;
                 FrameLayout contentContainer = (FrameLayout) ((Activity) getContext()).findViewById(android.R.id.content);
                 contentContainer.removeView(PreviewLayout.this);
             }
@@ -227,7 +236,7 @@ public class PreviewLayout extends FrameLayout implements ViewPager.OnPageChange
             photoView.setOnViewTapListener(new PhotoViewAttacher.OnViewTapListener() {
                 @Override
                 public void onViewTap(View view, float x, float y) {
-                    triggerScaleDownAnimation();
+                    startScaleDownAnimation();
                 }
             });
 
